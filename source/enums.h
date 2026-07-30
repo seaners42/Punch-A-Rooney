@@ -1,0 +1,202 @@
+#pragma once
+
+enum Character
+{
+  ROONEY,
+  SLIMJIM,
+  JILL,
+  LILPABLO,
+  SVETLANA,
+  KAIRO,
+};
+
+enum Moves
+{
+  IDLE,
+  LIGHT,
+  HEAVY,
+  SUPER,
+  BLOCK,
+  BLOCK_SCRIPT,
+  DODGE,
+  DMG,
+  DOWN,
+  TIRED,
+  INTRO,
+  VICTORY,
+  SUPERSEQ,
+  LANATAUNT,
+  TAP,
+  PUSH
+};
+
+enum GameType
+{
+  STORY_GAME,
+  FREE_GAME,
+  MP_GAME
+};
+
+enum RefMoves
+{
+  REFIDLE,
+  COUNT,
+  BOX,
+  DECISION,
+  CALLOFF,
+  ROUNDEND
+};
+
+enum Movement
+{
+  LEFT,
+  RIGHT,
+  STILL
+};
+
+enum Stats
+{
+  X,
+  Y,
+  STATE,
+  HP,
+  SHIELD,
+  STAMINA,
+  SUPERMETER,
+  INTCLOCK,
+  SPAMCOUNT,
+  AILEVEL,
+  DOWNS,
+  LASTDAMAGED,
+  LASTSTAMINA,
+  LOCKED,
+  JUKED,
+  CHAR,
+  REFALLOWSMOVEMENT
+};
+
+enum Screens
+{
+  INTROCUTSCENE,
+  MENU,
+  GAME,
+  ROUNDTRANSITION,
+  RESULTS,
+  PREVIEW,
+  WINNER,
+  UNDISPUTED
+};
+
+enum Menus
+{
+  LOADING,
+  TITLE,
+  MAIN,
+  CAREER,
+  DEBUT,
+  DEFENSE,
+
+  GUIDE,
+
+  FREEPLAY,
+  MULTIPLAYER,
+  EXTRAS,
+  RECORDS,
+  STORY_RECORDS,
+  MP_RECORDS,
+
+  WONTD,
+  CREDITS,
+
+  SETTINGS,
+
+  HOST_ROOM,
+  JOIN_ROOM,
+
+  MUSIC_PLAYER,
+  GALLERY,
+
+  NO_MENU
+};
+
+enum MenuSelection
+{
+  OPEN_CAREER,
+  OPEN_FREEPLAY,
+  OPEN_MULTIPLAER,
+  OPEN_EXTRAS,
+  OPEN_OPTIONS,
+
+  OPEN_DEBUT,
+  OPEN_DEFENSE,
+
+  OPEN_MULTIPLAYER_HOST,
+  OPEN_MULTIPLAYER_CLIENT,
+
+  START_GUIDE,
+
+  START_NEW_GAME,
+  START_PREV_GAME,
+
+  START_NEW_TD,
+  START_PREV_TD,
+
+  OPEN_RECORDS,
+
+  OPEN_STORY_RECORDS,
+  OPEN_MP_RECORDS,
+
+  START_FREEPLAY,
+  START_MULTIPLAYER,
+
+  OPEN_ROOM,
+  SEARCH_ROOM,
+
+  OPEN_CREDITS,
+  OPEN_GALLERY,
+  OPEN_MUSIC,
+
+  BACK_MAIN,
+  BACK_EXTRAS,
+  BACK_FREEPLAY,
+
+  NONE
+};
+
+enum MenuOrganization
+{
+  STAGGER,
+  CENTERED,
+  NO_ORG
+};
+
+enum CornermenDialogue
+{
+  DOING_WELL,
+  GETTING_HURT,
+  GETTING_TIRED,
+  REFWILLDECIDE,
+};
+
+enum ButtonFont
+{
+  FNT_A,
+  FNT_B,
+  FNT_X,
+  FNT_Y,
+  FNT_UP,
+  FNT_DOWN,
+  FNT_LEFT,
+  FNT_RIGHT,
+  FNT_L,
+  FNT_R,
+  FNT_STAR
+};
+
+inline const char* btnfonts[] = {"\xC7", "\xE7", "\xD1", "\xF1",
+
+                                 "\xC1", "\xC9", "\xCD", "\xD3",
+
+                                 "\xDA", "\xE1", "\xE9"
+
+};

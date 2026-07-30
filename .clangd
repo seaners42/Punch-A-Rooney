@@ -1,0 +1,16 @@
+CompileFlags:
+  CompilationDatabase: .
+  Add:
+    - -DARM9
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/../../../../arm-none-eabi/include/c++/16.1.1
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/../../../../arm-none-eabi/include/c++/16.1.1/arm-none-eabi/arm7tdmi
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/../../../../arm-none-eabi/include/c++/16.1.1/backward
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/include
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/include-fixed
+    - -isystem
+    - /opt/wonderful/toolchain/gcc-arm-none-eabi/lib/gcc/arm-none-eabi/16.1.1/../../../../arm-none-eabi/include
