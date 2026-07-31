@@ -72,4 +72,4 @@ I used the libraries provided by [BlocksDS](https://blocksds.skylyrac.net/). Onc
 There are a lot of sloppy convert bashes in each asset folder. Run them in order based on "alphabetical order"
 
 ## License
-The source code for this project is licensed under Apache-2.0, except otherwise stated. For more information, see [LICENSE](https://github.com/WiIIiam278/breaking-bad-ds/blob/main/LICENSE).
+The source code for this project is licensed under Apache-2.0, except otherwise stated.
