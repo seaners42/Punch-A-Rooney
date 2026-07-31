@@ -40,6 +40,7 @@ void Game::initializeDS(int argc, char** argv)
     }
   }
 
+  // Init Wifi
   printf("Initializing WiFi...\n");
 
   if (!Wifi_InitDefault(INIT_ONLY | WIFI_LOCAL_ONLY))
@@ -70,6 +71,9 @@ void Game::initializeDS(int argc, char** argv)
     saving_possible = false;
     printf("Continuing without save data\n");
   }
+
+  // Only ever do this stuff if you are on a system that allows save data (i.e. DS Hardware or
+  // Emulator)
 
   if (saving_possible)
   {
@@ -102,6 +106,7 @@ void Game::initializeDS(int argc, char** argv)
 
     printf("Save path: %s\n", save_path);
   }
+
   // Try to load saved data
 
   if (load_data(save_path))
@@ -110,6 +115,8 @@ void Game::initializeDS(int argc, char** argv)
   }
   else
   {
+    // Create new save data for a first timer
+
     game_data.playedOnce = false;
     game_data.lookedAtGuide = false;
 
@@ -155,7 +162,11 @@ void Game::initializeDS(int argc, char** argv)
     }
   }
 
+  // Init sound and music bank
+
   mmInitDefault("soundbank.bin");
+
+  // Up and running baby
 
   isRunning = true;
   paused = false;
@@ -194,16 +205,19 @@ void Game::setup2DGraphics(bool debug)
 
 int Game::loadBoxingRing(GameType gameType, int id)
 {
+
+  // For FREE or MP
+  customValues = menu.getCustomGame();
+
+  // Switches between STORY_GAME, FREE_GAME, and MP_GAME (Career, Freeplay, and Local respectively)
+  currentGame = gameType;
+
+  // Story mode
+  titleDefense = id > 5;
   currentMatch = GetMatch(id);
   storyCounter = id;
 
-  customValues = menu.getCustomGame();
-
-  currentGame = gameType;
-  titleDefense = id > 5;
-
-  currentScene = GAME;
-
+  // Freeplay
   int difficulies[5] = {
       -42,
       7,
@@ -211,6 +225,9 @@ int Game::loadBoxingRing(GameType gameType, int id)
       1000,
   };
 
+  currentScene = GAME;
+
+  // Handle loading based on game type
   switch (gameType)
   {
     case STORY_GAME:
@@ -267,9 +284,11 @@ int Game::loadBoxingRing(GameType gameType, int id)
 
   boxersLoaded = true;
 
+  // Load the top and bottom screen assets
   loadFightTop();
   loadFightBottom();
 
+  // All the game data
   roundActive = false;
   matchActive = true;
   roundTimer = 10800;
@@ -279,23 +298,29 @@ int Game::loadBoxingRing(GameType gameType, int id)
   maxRounds = (currentGame != STORY_GAME) ? customValues[1] : 3;
   timerSpeed = (currentGame != STORY_GAME) ? customValues[2] : 2;
 
+  // Stuff for the Interval scene (can we get props for the cornermen)
   interval = false;
   transitioningIntoInterval = false;
 
+  // Crowd variables
   crowdStart = tick;
   crowdVolume = 0;
 
+  // Audio temp, pitch, and volume. (Make it a little lower if you're on title defense for dramatic
+  // effect)
   mmSetModuleTempo(1024);
   mmSetModulePitch(titleDefense ? 960 : 1024);
   mmSetModuleVolume(game_data.muteMusic ? 0 : 1024 / 3);
 
   matchMusic = (currentGame != STORY_GAME) ? stageMusic[customValues[3]]
                                            : stageMusic[storyCounter - (titleDefense ? 5 : 0)];
+
+  // SFX
   mmLoadEffect(SFX_BELL);
   mmLoadEffect(SFX_KO);
   mmLoadEffect(SFX_CROWD);
 
-  // Setup Window For Main Screen
+  // Setup window on topscreen for super letterboxing
 
   setBackdropColor(RGB15(0, 3, 5));
 
@@ -311,9 +336,10 @@ int Game::loadBoxingRing(GameType gameType, int id)
 
   windowDisable(WINDOW_1);
 
-  // Setup Window For Sub Screen
-
   setBackdropColorSub(RGB15(0, 3, 5));
+
+  // If the music failed to load, go back to the main menu.
+  // (If you're reading this and this ever happens, shoot an issue)
 
   if (mmLoad(matchMusic))
   {
@@ -321,6 +347,7 @@ int Game::loadBoxingRing(GameType gameType, int id)
     startMainMenu(false);
   }
 
+  // Congrats, you played once!
   game_data.playedOnce = true;
 
   return 0;
@@ -329,6 +356,9 @@ int Game::loadBoxingRing(GameType gameType, int id)
 void Game::inInterval(bool show)
 {
   interval = show;
+
+  // Load or unload the interval scene
+
   if (!show)
   {
     NF_DeleteAffineBg(0, 2);
@@ -397,6 +427,7 @@ void Game::inInterval(bool show)
     StartDialogue();
   }
 
+  // Hide the boxers and referee
   boxer1.hide(!show);
   boxer2.hide(!show);
   ref.hide(!show);
@@ -404,6 +435,7 @@ void Game::inInterval(bool show)
 
 int Game::loadWinScreen(bool undisputed)
 {
+  // Change based on if you come from title defense
   currentScene = undisputed ? UNDISPUTED : WINNER;
 
   matchMusic = undisputed ? MOD_UNDISPUTEDSCREEN : MOD_CHAMPSCREEN;
@@ -420,12 +452,15 @@ int Game::loadWinScreen(bool undisputed)
   NF_CreateAffineBg(0, 3, "WinnerBg", 1);
   NF_CreateAffineBg(1, 2, "WinnerBg", 1);
 
+  // Cancel crowd sounds
   mmEffectCancel(crowd);
   return 0;
 }
 
 void Game::unloadWinScreen()
 {
+
+  // Stop and free music and assets
   mmStop();
   mmUnload(matchMusic);
 
@@ -441,6 +476,7 @@ void Game::unloadWinScreen()
 int Game::loadPreviewStory()
 {
 
+  // If you come from title defense, the assets should differ
   titleDefense = storyCounter > 5;
 
   if (titleDefense)
@@ -448,6 +484,7 @@ int Game::loadPreviewStory()
   else
     game_data.storyProgress = storyCounter;
 
+  // Save
   if (save_data(save_path))
   {
     nocashMessage("Saved data!\n");
@@ -457,9 +494,11 @@ int Game::loadPreviewStory()
     nocashMessage("Can't save data!\n");
   }
 
+  // Set scene and match
   currentScene = PREVIEW;
   currentMatch = GetMatch(storyCounter);
 
+  // Load all assets and music
   NF_LoadAffineBg(currentMatch->preview, "Preview", 256, 256);
   NF_CreateAffineBg(0, 2, "Preview", 0);
   NF_LoadAffineBg(currentMatch->previewbg, "PreviewBg", 256, 256);
@@ -474,10 +513,11 @@ int Game::loadPreviewStory()
   mmSetPosition(1);
   mmEffectCancel(crowd);
 
+  // Start dialogue sequence
   StartDialogue();
 
+  // Set bottom screen letterboxing
   setBackdropColorSub(RGB15(0, 3, 5));
-
   windowSetBoundsSub(WINDOW_0, 1, 50, SCREEN_WIDTH - 1, SCREEN_HEIGHT - 50);
 
   for (int i = 0; i < 256; i++)
@@ -497,6 +537,7 @@ int Game::loadPreviewStory()
 
 void Game::unloadPreviewStory()
 {
+  // Stop and free music and assets
   mmUnload(matchMusic);
 
   NF_DeleteAffineBg(0, 2);
@@ -508,12 +549,12 @@ void Game::unloadPreviewStory()
   windowDisableSub(WINDOW_0);
 
   StopDialogue();
-
-  // windowDisableSub(WINDOW_0);
 }
 
 void Game::unloadBoxingRing()
 {
+
+  // Free all assets, music, and reset all game variables
 
   boxersLoaded = false;
   boxer1.unload();
@@ -562,8 +603,11 @@ void Game::unloadBoxingRing()
 
 void Game::loadFightBottom()
 {
+
+  // Load all sprites for the bottom screen
+  // (NOTE: set variable names rather than magic numbers for asset loading)
+
   NF_LoadSpritePal("sprite/bottomfight", 10);
-  NF_VramSpritePal(1, 10, 10);
 
   NF_LoadSpriteGfx("sprite/boxerbars", 10, 64, 64);
   NF_VramSpriteGfx(1, 10, 10, false);
@@ -578,12 +622,18 @@ void Game::loadFightBottom()
     NF_LoadSpriteGfx("sprite/champportraits", 14, 64, 64);
   else
     NF_LoadSpriteGfx("sprite/portraits", 14, 64, 64);
+
   NF_VramSpriteGfx(1, 14, 14, false);
 
+  // Loads the bottom sprite pallete into the vram twice, the second time for the yellow bars.
+  // This is stupid, don't do this and just create another arbitrary color in your pallete file
+  NF_VramSpritePal(1, 10, 10);
   NF_VramSpritePal(1, 10, 11);
 
+  // Sets the color for the stamina bar
   NF_SpriteSetPalColor(1, 11, 1, 31, 22, 13);
 
+  // Create health bars
   for (int i = 0; i < 4; i++)
   {
     int offset = 25;
@@ -614,6 +664,7 @@ void Game::loadFightBottom()
     NF_SpriteRotScale(1, offset + i, 0, i < 2 ? 280 : -280, 20);
   }
 
+  // Create blank UI (boxerbars)
   for (int i = 0; i < 4; i++)
   {
     int offset = 10;
@@ -622,6 +673,7 @@ void Game::loadFightBottom()
     NF_HflipSprite(1, offset + i, i > 1);
   }
 
+  // Create the portaits for each boxer
   for (int i = 0; i < 2; i++)
   {
     int offset = 23;
@@ -637,7 +689,10 @@ void Game::loadFightBottom()
     NF_SpriteFrame(1, offset + i, which);
   }
 
+  // Create the DS icon in the middle of the screen (shown when knocked down)
   NF_CreateSprite(1, 22, 12, 10, (SCREEN_WIDTH / 2) - 16, (SCREEN_HEIGHT / 2) - 16 - 10);
+
+  // r g b are set to the stage color and then the palatte for the boxer bars is changed.
 
   u8 r = stagecolor[(currentGame != STORY_GAME) ? customValues[3]
                                                 : storyCounter - (titleDefense ? 5 : 0)][0];
@@ -651,6 +706,9 @@ void Game::loadFightBottom()
 
 void Game::unloadFightBottom()
 {
+
+  // Delete, unload, and free all sprites and their assets
+
   for (int sprites : {10, 12, 13, 14})
   {
     NF_UnloadSpriteGfx(sprites);
@@ -675,6 +733,9 @@ void Game::unloadFightBottom()
 
 void Game::loadFightTop()
 {
+
+  // Load all sprites for the top screen
+
   NF_LoadSpriteGfx("sprite/bell", 9, 32, 32);
   NF_LoadSpritePal("sprite/bell", 9);
 
@@ -697,14 +758,22 @@ void Game::loadFightTop()
   NF_VramSpritePal(0, 13, 13);
 
   NF_VramSpriteGfx(0, 30, 30, false);
+
+  // Loads the top pallete for timer digits into the vram twice, the second time for
+  // the green numbers.
+  // This is stupid, don't do this and just create another arbitrary color in your pallete
+  // file
   NF_VramSpritePal(0, 11, 11);
   NF_VramSpritePal(0, 11, 12);
 
+  // Set each pallete for red and green numbers
   NF_SpriteSetPalColor(0, 11, 1, 0, 29, 0);
   NF_SpriteSetPalColor(0, 12, 1, 29, 0, 0);
 
+  // Create the bell
   NF_CreateSprite(0, 30, 9, 9, 128 - 16, 5);
 
+  // Create the numbers for the timer and round counter
   for (int i = 0; i < 4; i++)
   {
     int offset = 31;
@@ -713,11 +782,12 @@ void Game::loadFightTop()
     NF_EnableSpriteRotScale(0, offset + i, 10, false);
   }
 
+  // Create the knockdown number
   NF_CreateSprite(0, 35, 40, 13, 128 - 16, 96 - 16);
 
+  // Create the multiplayer identifiers regardless of gametype
   NF_CreateSprite(0, 36, 37, 14, 0, 0);
   NF_CreateSprite(0, 37, 37, 14, 128, 0);
-
   NF_SpriteFrame(0, 36, 0);
   NF_SpriteFrame(0, 37, 1);
 
@@ -732,11 +802,14 @@ void Game::loadFightTop()
     NF_ShowSprite(0, 37, false);
   }
 
+  // Hide the DS icon
   NF_ShowSprite(0, 35, false);
 }
 
 void Game::unloadFightTop()
 {
+  // Delete, unload, and free all assets
+
   for (int gfx : {9, 30, 40, 37})
   {
     NF_UnloadSpriteGfx(gfx);
@@ -756,6 +829,8 @@ void Game::unloadFightTop()
 
 void Game::startIntro()
 {
+
+  // Load scene sounds
   mmLoadEffect(SFX_INTRO_ITALY);
   mmLoadEffect(SFX_INTRO_PAPER);
 
@@ -764,11 +839,18 @@ void Game::startIntro()
   mmLoadEffect(SFX_BELL);
   mmLoadEffect(SFX_CROWD);
 
+  // Set the screen to black
   setBrightness(3, -16);
+
+  // Set scene to intro
   currentScene = INTROCUTSCENE;
+
+  // Load the first intro bg
 
   NF_LoadAffineBg("bg/Intro", "intro", 256, 256);
   NF_CreateAffineBg(0, 2, "intro", false);
+
+  // Create the center window for the top screen
 
   setBackdropColor(RGB15(0, 3, 5));
 
@@ -787,6 +869,8 @@ void Game::startIntro()
 
 void Game::unloadIntro()
 {
+  // Delete and unload all the assets for the intro scene.
+
   NF_DeleteAffineBg(0, 2);
   NF_UnloadAffineBg("intro");
 
@@ -805,8 +889,10 @@ void Game::unloadIntro()
 void Game::startMainMenu(bool intro)
 {
 
+  // Disable the window if it's being used
   windowDisable(WINDOW_1);
 
+  // Save
   if (save_data(save_path))
   {
     nocashMessage("Saved data!\n");
@@ -816,20 +902,28 @@ void Game::startMainMenu(bool intro)
     nocashMessage("Can't save data!\n");
   }
 
+  // Set scene to menu
   currentScene = MENU;
 
   Transition(3, intro ? 16 : -16, 0, false);
 
+  // Call load on the menu for this game class.
   menu.Load(showCredits ? WONTD : intro ? TITLE : MAIN);
+
+  // This is true if you beat title defense for the first time.
+  // Set it to false.
   showCredits = false;
 }
 
+// The input handler for this game
 void Game::handleEvents()
 {
   scanKeys();
 
-  if (!lockInput)
+  if (!lockInput) // Only do everything if you're allowed to give inputs
   {
+
+    // Handles the input if you are in the main menu.
     if (currentScene == MENU)
     {
       switch (menu.handleInput())
@@ -893,6 +987,9 @@ void Game::handleEvents()
       }
     }
 
+    // Story mode preview screen, if you press A you fight
+    // If you press B, you go back.
+
     if (currentScene == PREVIEW && brightness == 0)
     {
       if (keysDown() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
@@ -909,6 +1006,7 @@ void Game::handleEvents()
       }
     }
 
+    // Skip Intro
     if (currentScene == INTROCUTSCENE)
     {
       if (keysDown() & KEY_A || keysDown() & KEY_START)
@@ -918,6 +1016,7 @@ void Game::handleEvents()
       }
     }
 
+    // Exit results screen
     if ((currentScene == WINNER || currentScene == UNDISPUTED) && brightness == 0)
     {
       if (keysDown() & KEY_A)
@@ -928,19 +1027,23 @@ void Game::handleEvents()
       }
     }
 
+    // Handle all inputs during the fight.
     if (currentScene == GAME)
     {
       if (boxersLoaded && (!paused))
       {
         if (roundActive)
+          // Handle the input for the boxer you control.
           boxer1.handleInput();
       }
 
+      // If you are in the interval scene, leave
       if (keysDown() & KEY_A && (!lockInput) && interval)
       {
         intervalTransition(false, false);
       }
 
+      // Pause
       if (keysDown() & KEY_START && roundActive)
       {
         paused = !paused;
@@ -956,11 +1059,13 @@ void Game::handleEvents()
         }
       }
 
+      // Set paused to false if the timer reaches zero just to prevent any issues.
       if (!roundActive)
       {
         paused = false;
       }
 
+      // Leave the game and return to the main menu.
       if (keysDown() & KEY_B && paused)
       {
         paused = false;
@@ -973,6 +1078,7 @@ void Game::handleEvents()
   }
 }
 
+// Update the sprites and visuals of the bottom screen during a fight.
 void Game::updateFightBottom()
 {
   if (currentScene == GAME)
@@ -1282,6 +1388,8 @@ int Game::manageFight()
   else if ((boxer1.m_downs + boxer2.m_downs) > 0)
   {
     expectedWinner = boxer1.m_downs >= boxer2.m_downs ? 2 : 1;
+    if (((currentGame == MP_GAME) && isHost) && boxer2.m_downs == boxer1.m_downs)
+      expectedWinner = 1;
   }
   else
   {
