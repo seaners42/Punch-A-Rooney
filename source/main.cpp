@@ -6,6 +6,14 @@
 #include <sys/unistd.h>
 
 // PUNCH-A-ROONEY!
+// Sean David
+
+// This project was actually an overhaul of a PyGame project I made in about 5 days.
+// This two-week project took two months before it was finally released onto my GitHub
+// I've learned a lot making this game, so this code may not be the most up-to-par with
+// most coding standards or even game-dev code organization
+
+// But the game is pretty fun regardless!
 
 int main(int argc, char** argv)
 {

@@ -12,76 +12,7 @@ static Wifi_AccessPoint AccessPoint;
 // ======================
 #define MAX_CLIENTS 2
 
-/*
-typedef struct {
-
-    // Host Started
-
-    // Position
-    int m_x;
-    int m_y;
-    int m_rot;
-
-    // Gameplay Variables
-    int m_hp;
-    int m_stamina;
-    int m_block;
-    int m_super;
-    Moves m_state;
-
-    int m_downs;
-
-    // Change x and y by
-    bool m_juked;
-    bool m_boxerLocked;
-
-    Character m_character;
-
-    // Animation Variables
-    int m_intClock;
-    int m_frame;
-
-    // Get Up Count handles if you get up after a knockdown
-    int m_getUpCount;
-
-    bool ready;
-
-
-} Client;
-
-typedef struct {
-    // Host Started
-
-    // Position
-    int m_x;
-    int m_y;
-    int m_rot;
-
-    // Gameplay Variables
-    int m_hp;
-    int m_stamina;
-    int m_block;
-    int m_super;
-    Moves m_state;
-
-    int m_downs;
-
-    // Change x and y by
-    bool m_juked;
-    bool m_boxerLocked;
-
-    Character m_character;
-
-    // Animation Variables
-    int m_intClock;
-    int m_frame;
-
-    // Get Up Count handles if you get up after a knockdown
-    int m_getUpCount;
-
-    bool ready;
-} pkt_client_to_host;
-*/
+// Taken from the DSWifi9 multiplayer example
 
 typedef struct
 {

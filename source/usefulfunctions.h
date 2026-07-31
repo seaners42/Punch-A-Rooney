@@ -1,5 +1,7 @@
 #pragma once
 
+// Should've had a lot more in here but it's okay
+
 // Global tick
 
 inline int tick = 0;

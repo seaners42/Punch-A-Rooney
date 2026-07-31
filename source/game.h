@@ -77,6 +77,7 @@ class Game
 
   // Timer for round and time spent knocked down
 
+  int bellAnim = 0;
   int roundTimer;
   int downTimer;
 
@@ -192,7 +193,7 @@ public:
   void unloadFightBottom();
 
   void intervalTransition(bool transitioning_in, bool updater);
-  void endGame(bool updater);
+  bool endGame();
 
   void startIntro();
   void unloadIntro();

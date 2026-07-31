@@ -17,6 +17,7 @@ Menu::Menu() {}
 
 Menu::~Menu() {}
 
+// Init menu
 int Menu::Load(Menus menu)
 {
   NF_LoadAffineBg("bg/Title", "title", 256, 256);
@@ -95,6 +96,7 @@ int Menu::Load(Menus menu)
   return 0;
 }
 
+// Delete, unload, and free all menu assets
 void Menu::Unload()
 {
   currentMenu = NO_MENU;
@@ -139,6 +141,7 @@ void Menu::Unload()
   NF_VramSpriteGfxDefrag(1);
 }
 
+// Draw the menu layout
 void Menu::DrawLayout()
 {
   if (currentLayout != &LAYOUTS[0])
@@ -203,6 +206,8 @@ void Menu::DrawLayout()
   currentLayout = layout;
 }
 
+// All functions should be self explanatory, load/unload assets based on function called
+
 void Menu::showGallery(bool show)
 {
   if (show)
@@ -253,14 +258,6 @@ void Menu::showFreeplayMaps(bool show)
     {
       NF_DeleteSprite(1, 60 + i);
     }
-  }
-}
-
-void Menu::updateFreeplayMaps()
-{
-  for (int i = 0; i < 6; i++)
-  {
-    NF_SpriteFrame(1, 60 + i, i + (Cursor == i ? 6 : 0));
   }
 }
 
@@ -366,6 +363,49 @@ void Menu::showGuide(bool show)
   }
 }
 
+void Menu::showRecordsBoxers(bool show)
+{
+  if (show)
+  {
+    NF_CreateSprite(0, 1, 1, 1, 96, 30);
+    NF_EnableSpriteRotScale(0, 1, 1, true);
+    NF_SpriteRotScale(0, 1, 0, 256 * 1.5, 256 * 1.5);
+
+    NF_CreateSprite(0, 2, 3, 3, 36, 60);
+    NF_HideBg(0, 2);
+
+    windowSetBounds(WINDOW_1, 36, 60, 36 + 64, 60 + 64);
+
+    bgWindowEnable(2, WINDOW_OUT);
+    bgWindowEnable(3, WINDOW_OUT);
+    oamWindowEnable(&oamMain, WINDOW_OUT);
+
+    for (int i = 0; i < 100; i++)
+    {
+      bgWindowEnable(i, WINDOW_OUT);
+      bgWindowEnable(i, WINDOW_1);
+    }
+
+    bgWindowDisable(2, WINDOW_1);
+    bgWindowDisable(3, WINDOW_1);
+    oamWindowEnable(&oamMain, WINDOW_1);
+
+    windowEnable(WINDOW_1);
+
+    setBackdropColor(RGB15(0, 3, 5));
+  }
+  else
+  {
+    NF_DeleteSprite(0, 1);
+    NF_DeleteSprite(0, 2);
+    NF_ShowBg(0, 2);
+
+    windowDisable(WINDOW_1);
+  }
+}
+
+// Update all assets based on function called
+
 void Menu::updateGuide()
 {
   int sequence1[2][20] = {
@@ -411,47 +451,6 @@ void Menu::updateFreeplayBoxers()
   return;
 }
 
-void Menu::showRecordsBoxers(bool show)
-{
-  if (show)
-  {
-    NF_CreateSprite(0, 1, 1, 1, 96, 30);
-    NF_EnableSpriteRotScale(0, 1, 1, true);
-    NF_SpriteRotScale(0, 1, 0, 256 * 1.5, 256 * 1.5);
-
-    NF_CreateSprite(0, 2, 3, 3, 36, 60);
-    NF_HideBg(0, 2);
-
-    windowSetBounds(WINDOW_1, 36, 60, 36 + 64, 60 + 64);
-
-    bgWindowEnable(2, WINDOW_OUT);
-    bgWindowEnable(3, WINDOW_OUT);
-    oamWindowEnable(&oamMain, WINDOW_OUT);
-
-    for (int i = 0; i < 100; i++)
-    {
-      bgWindowEnable(i, WINDOW_OUT);
-      bgWindowEnable(i, WINDOW_1);
-    }
-
-    bgWindowDisable(2, WINDOW_1);
-    bgWindowDisable(3, WINDOW_1);
-    oamWindowEnable(&oamMain, WINDOW_1);
-
-    windowEnable(WINDOW_1);
-
-    setBackdropColor(RGB15(0, 3, 5));
-  }
-  else
-  {
-    NF_DeleteSprite(0, 1);
-    NF_DeleteSprite(0, 2);
-    NF_ShowBg(0, 2);
-
-    windowDisable(WINDOW_1);
-  }
-}
-
 void Menu::updateRecordsBoxers()
 {
 
@@ -460,13 +459,23 @@ void Menu::updateRecordsBoxers()
   return;
 }
 
+void Menu::updateFreeplayMaps()
+{
+  for (int i = 0; i < 6; i++)
+  {
+    NF_SpriteFrame(1, 60 + i, i + (Cursor == i ? 6 : 0));
+  }
+}
+
+// Update the general layout
 void Menu::UpdateLayout()
 {
   for (int i = 0; i < currentLayout->buttonCount; i++)
   {
+
+    // Switch between these two offsets based on the organization of the layour
     int txtstagger[2] = {50 + (i * 7), 30 + (26 * i)};
-    int txtcenter[2] = {94,
-                        static_cast<int>((82 + (currentLayout->buttonCount * -10.4f)) + (26 * i))};
+    int txtcenter[2] = {94, (int)((82 + (currentLayout->buttonCount * -10.4f)) + (26 * i))};
 
     Button button = currentLayout->buttons[i];
     int xpos = (currentLayout->organization == STAGGER ? txtstagger : txtcenter)[0];
@@ -481,15 +490,17 @@ void Menu::UpdateLayout()
       {
         int btnstagger[2] = {((j == 1) ? 20 : 84) + (i * 7), 30 + (26 * i)};
 
-        int btncenter[2] = {
-            (j == 1) ? 64 : 128,
-            static_cast<int>((82 + (currentLayout->buttonCount * -10.4f)) + (26 * i))};
+        int btncenter[2] = {(j == 1) ? 64 : 128,
+                            (int)((82 + (currentLayout->buttonCount * -10.4f)) + (26 * i))};
 
         int xpos = (currentLayout->organization == STAGGER ? btnstagger : btncenter)[0];
         int ypos = (currentLayout->organization == STAGGER ? btnstagger : btncenter)[1];
 
+        // Change button sprites to selected or unselected
         NF_SpriteFrame(1, 80 + (i * 2) + j,
                        j + (button.Base) + ((currentSelection == button.Destination) ? 4 : 0));
+
+        // Sway button if selected
         NF_MoveSprite(1, 80 + (i * 2) + j,
                       xpos + sin(tick / 30.0f) *
                                  (currentSelection == button.Destination ? 5.0f : 0.0f),
@@ -497,6 +508,8 @@ void Menu::UpdateLayout()
       }
     }
   }
+
+  // Replace the title text on the top left if you are in multiplayer
   NF_SetTextColor(1, 0, 1);
   NF_WriteText(1, 0, 1, 1, mp_game.connected == 1 ? "Local Multiplayer" : currentLayout->menuTitle);
 
@@ -504,6 +517,9 @@ void Menu::UpdateLayout()
   char left[5];
   char right[5];
   bool showQuit = false;
+
+  // If you're in multiplayer, the B button should say quit instead of back
+  // if the page you're on will make you leave
 
   if (mp_game.connected == 1)
   {
@@ -520,12 +536,14 @@ void Menu::UpdateLayout()
   if (currentLayout->showBackButton)
     NF_WriteText(1, 0, 2, 21, helpfultext);
 
+  // Show page navigation
   if (currentLayout->maxPages > 1)
   {
     NF_WriteText(1, 0, 1, 11, pageNumber > 1 ? left : "");
     NF_WriteText(1, 0, 28, 11, pageNumber < currentLayout->maxPages ? right : "");
   }
 
+  // Sway the title and bg if it's loaded
   if (titleLoaded)
   {
     NF_AffineBgCenter(0, 2, SCREEN_WIDTH / 1.5, SCREEN_HEIGHT / 1.5);
@@ -539,21 +557,26 @@ void Menu::UpdateLayout()
     NF_AffineBgMove(0, 3, tick / 2, (int)(sin(tick / 60.0f)) * 15.0f + 15, 0);
     NF_AffineBgMove(1, 3, -tick / 2, (int)(256 + 192 + sin(tick / 60.0f) * 15.0f + 15), 0);
   }
-  else
+  else // Don't sway i guess
   {
-    if (currentMenu != GUIDE)
+    if (currentMenu != GUIDE) // Guide replaces the top bg, don't move it
     {
       NF_AffineBgCenter(0, 2, 0, 0);
       NF_AffineBgTransform(0, 2, 256, 256, 0, 0);
-      if (currentMenu != GALLERY)
+      if (currentMenu != GALLERY) // Gallery replaces the bottom bg, don't move it
         NF_AffineBgMove(1, 3, -tick / 2, 256 + 192 + sin(tick / 60.0f) * 15.0f + 15, 0);
     }
   }
 }
 
+// Constantly update based on current menu,
+// I don't really need to define what each case means.
+
 int Menu::Update()
 {
+  // mp packet
   pkt_client_to_host packet;
+
   switch (currentMenu)
   {
     case TITLE:
@@ -562,6 +585,7 @@ int Menu::Update()
       break;
     case MAIN:
 
+      // Main menu stars for beating the game in story / title defense
       if (game_data.wonOnce)
         NF_WriteText(1, 0, 3, 2, btnfonts[FNT_STAR]);
       if (game_data.wonTDOnce)
@@ -587,6 +611,7 @@ int Menu::Update()
     case DEFENSE:
       NF_SetTextColor(1, 0, 0);
 
+      // Show guide pointer
       if (!game_data.lookedAtGuide)
       {
         NF_SetTextColor(1, 0, 2);
@@ -610,6 +635,7 @@ int Menu::Update()
       break;
 
     case CAREER:
+      // Show guide pointer
       if (!game_data.lookedAtGuide)
       {
         NF_SetTextColor(1, 0, 2);
@@ -671,7 +697,8 @@ int Menu::Update()
         case 6:
           NF_WriteText(1, 0, 5, 7, "Extra Credits");
           NF_WriteText(1, 0, 5, 10, "William278");
-          NF_WriteText(1, 0, 5, 12, "Everyone @ BlocksDS!");
+          NF_WriteText(1, 0, 5, 12, "Lillian Autenreith");
+          NF_WriteText(1, 0, 5, 14, "Everyone @ BlocksDS!");
           break;
         case 7:
           NF_WriteText(1, 0, 5, 5, "A Message:");
@@ -745,6 +772,7 @@ int Menu::Update()
                    mp_game.connected == 1 ? "Player Found!" : "Finding a Player");
       NF_WriteText(1, 0, 10, 12, mp_game.connected == 1 ? helpfultext : "");
 
+      // Timed out? Disconnect
       if (get_multiplayer_status() == MP_CONNECTION_LOST)
       {
         setMenu(MAIN);
@@ -835,6 +863,7 @@ int Menu::Update()
       NF_WriteText(1, 0, 11, 6, boxersText[pageNumber - 1]);
       break;
 
+    // This is a big one
     case FREEPLAY:
     {
       if (mp_game.connected == 1)
@@ -1063,6 +1092,7 @@ int Menu::Update()
   return 0;
 }
 
+// Based on the selection, do the action each selection wants
 void Menu::buttonInterpret()
 {
   switch (currentSelection)
@@ -1157,6 +1187,9 @@ void Menu::buttonInterpret()
       break;
   }
 }
+
+// Set menu then draw layout. A lot of these layouts need different backgrounds
+// so this function also handles that
 
 void Menu::setMenu(Menus menu)
 {
@@ -1299,6 +1332,7 @@ void Menu::setMenu(Menus menu)
   selectionRow = -1;
 }
 
+// Handle all inputs for each specific menu
 MenuSelection Menu::handleInput()
 {
   touchPosition touch;
@@ -1309,6 +1343,7 @@ MenuSelection Menu::handleInput()
     touchLast[1] = touch.py;
   }
 
+  // If the menu has page navigation, this handles all of it
   if (currentLayout->maxPages > 1)
   {
     if (keysDown() & KEY_LEFT && pageNumber > 1)
@@ -1341,6 +1376,7 @@ MenuSelection Menu::handleInput()
   switch (currentMenu)
   {
 
+    // Enter game
     case TITLE:
       if (keysUp() & KEY_TOUCH || keysDown() & KEY_A || keysDown() & KEY_START)
       {
@@ -1348,6 +1384,7 @@ MenuSelection Menu::handleInput()
         setMenu(MAIN);
       }
 
+    // Start MP
     case HOST_ROOM:
 
       if ((keysDown() & KEY_A) && mp_game.connected == 1)
@@ -1358,6 +1395,7 @@ MenuSelection Menu::handleInput()
       }
       break;
 
+    // Did the host start MP?
     case JOIN_ROOM:
 
       if (mp_game.gamestate == 1 && mp_game.connected == 1)
@@ -1366,6 +1404,7 @@ MenuSelection Menu::handleInput()
       }
       break;
 
+    // Show guide
     case DEBUT:
     case DEFENSE:
     case CAREER:
@@ -1377,6 +1416,7 @@ MenuSelection Menu::handleInput()
       }
       break;
 
+    // Scroll through the gallery
     case GALLERY:
       if ((keysDown() & KEY_LEFT || keysDown() & KEY_RIGHT) && (pageNumber >= 1 && pageNumber <= 7))
       {
@@ -1390,6 +1430,7 @@ MenuSelection Menu::handleInput()
       }
       break;
 
+    // Scroll through the music and pause if you'd like
     case MUSIC_PLAYER:
       if ((keysDown() & KEY_LEFT ||
            (keysDown() & KEY_TOUCH && isTouchInBounds(touch, 84, 123, 101, 141, false))) &&
@@ -1430,6 +1471,8 @@ MenuSelection Menu::handleInput()
         mmResume();
 
       break;
+      // Select and edit the only two options in settings. I was gonna make keybindings but
+      // It seemed like too much
 
     case SETTINGS:
       if (keysDown() & KEY_DOWN && Cursor < 1)
@@ -1475,9 +1518,13 @@ MenuSelection Menu::handleInput()
       break;
 
     case FREEPLAY:
+      // Each freeplay menu treats input differently.
+      // Also multiplayer uses this case so a lot of interweaving happens here,
+      // Probably wasn't a good idea but it made sense at the time
 
       switch (pageNumber)
       {
+        // Select difficulty, round number, and time speed
         case 1:
 
           if (keysDown() & KEY_DOWN && Cursor < 2)
@@ -1508,6 +1555,7 @@ MenuSelection Menu::handleInput()
 
           break;
 
+        // Select map
         case 2:
 
           if (keysDown() & KEY_RIGHT && ((Cursor >= 0 && Cursor < 2) || (Cursor > 2 && Cursor < 5)))
@@ -1586,6 +1634,8 @@ MenuSelection Menu::handleInput()
           customFlags[3] = Cursor;
 
           break;
+
+        // Select characters
         case 3:
 
           if (mp_game.connected != 1)
@@ -1666,6 +1716,7 @@ MenuSelection Menu::handleInput()
           break;
       }
 
+      // A: Move onto the next menu
       if (keysDown() & KEY_A && pageNumber < 3)
       {
         mmEffect(SFX_CONFIRM);
@@ -1680,6 +1731,7 @@ MenuSelection Menu::handleInput()
           showFreeplayMaps(true);
       }
 
+      // B: or Back Button Touched: Move onto the previous menu or quit
       if (keysDown() & KEY_B || (keysDown() & KEY_TOUCH &&
                                  isTouchInBounds(touch, 2 * 8, 21 * 8, (9 * 8), (22 * 8), false)))
       {
@@ -1710,6 +1762,7 @@ MenuSelection Menu::handleInput()
         }
       }
 
+      // Start the fight
       if (keysDown() & KEY_START && pageNumber == 3)
       {
         mmEffect(SFX_CONFIRM);
@@ -1726,6 +1779,7 @@ MenuSelection Menu::handleInput()
         return START_FREEPLAY;
       }
 
+      // Am I the client?
       if (mp_game.connected == 1 && (!isHost))
       {
         if (mp_game.gamestate == 2)
@@ -1742,6 +1796,7 @@ MenuSelection Menu::handleInput()
   return handleLayoutInput(touch);
 }
 
+// Detects if the DS touch was within a menu button
 bool Menu::isTouchOnButton(int row, touchPosition touch, bool up)
 {
   int btnstagger[2] = {20 + (row * 7), 30 + (26 * row)};
@@ -1765,6 +1820,7 @@ bool Menu::isTouchOnButton(int row, touchPosition touch, bool up)
   }
 }
 
+// Detects if the DS touch was within specified bounds
 bool Menu::isTouchInBounds(touchPosition touch, int x1, int y1, int x2, int y2, bool up)
 {
   if (up)
@@ -1777,13 +1833,16 @@ bool Menu::isTouchInBounds(touchPosition touch, int x1, int y1, int x2, int y2, 
   }
 }
 
+// customFlags
 int* Menu::getCustomGame()
 {
   return customFlags;
 }
 
+// Handle input for all general layout
 MenuSelection Menu::handleLayoutInput(touchPosition touch)
 {
+  // Button touched?
   if (keysDown() & KEY_TOUCH)
   {
     touchRead(&touch);
@@ -1800,6 +1859,7 @@ MenuSelection Menu::handleLayoutInput(touchPosition touch)
     }
   }
 
+  // On touch up, only return the selection if it was the same one on touch down
   if (keysUp() & KEY_TOUCH)
   {
     for (int i = 0; i < currentLayout->buttonCount; i++)
@@ -1829,10 +1889,13 @@ MenuSelection Menu::handleLayoutInput(touchPosition touch)
     return NONE;
   }
 
-  // hi
+  // hi!
+  // Confirm your selection
   if (keysDown() & KEY_A || keysDown() & KEY_START)
   {
     buttonInterpret();
+
+    // New game? You should be absolutely sure
     if ((currentSelection == START_NEW_GAME || currentSelection == START_NEW_TD) && !doubleCheck)
     {
       if ((currentMenu == DEBUT && game_data.storyProgress <= 1) ||
@@ -1848,11 +1911,13 @@ MenuSelection Menu::handleLayoutInput(touchPosition touch)
     return currentSelection;
   }
 
+  // Anything else pressed cancels the double check
   if (keysDown())
   {
     doubleCheck = false;
   }
 
+  // B for back
   if (keysUp() & KEY_B && (currentMenu != FREEPLAY) && (brightness == 0))
   {
     if (currentLayout->backWhere == MAIN || currentLayout->backWhere == MULTIPLAYER)
@@ -1864,6 +1929,7 @@ MenuSelection Menu::handleLayoutInput(touchPosition touch)
                                                                        : currentLayout->backWhere);
   }
 
+  // Did you touch the back button instead? Fancy
   if (currentLayout->showBackButton &&
       (keysDown() & KEY_TOUCH && isTouchInBounds(touch, 2 * 8, 21 * 8, (9 * 8), (22 * 8), false)) &&
       (currentMenu != FREEPLAY) && (brightness == 0))
@@ -1877,11 +1943,18 @@ MenuSelection Menu::handleLayoutInput(touchPosition touch)
                                                                        : currentLayout->backWhere);
   }
 
+  // If your menu uses a custom navigation (Pages, freeplay config, settings) don't do the stuff
+  // below
+
+  // This is because pressing A after using the DPad on a menu with no buttons just takes you
+  // to the Career menu
+
   if (currentLayout->customNavigation)
   {
     return NONE;
   }
 
+  // Navigate buttons
   if (keysDown() & KEY_DOWN)
   {
     selectionRow = std::min(selectionRow + 1, currentLayout->buttonCount - 1);

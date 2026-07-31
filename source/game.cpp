@@ -557,6 +557,7 @@ void Game::unloadBoxingRing()
   // Free all assets, music, and reset all game variables
 
   boxersLoaded = false;
+
   boxer1.unload();
   boxer2.unload();
   ref.unload();
@@ -802,7 +803,7 @@ void Game::loadFightTop()
     NF_ShowSprite(0, 37, false);
   }
 
-  // Hide the DS icon
+  // Hide the ko number
   NF_ShowSprite(0, 35, false);
 }
 
@@ -1083,6 +1084,9 @@ void Game::updateFightBottom()
 {
   if (currentScene == GAME)
   {
+
+    // Stats of the boxers translated into screen pixel positions for the bars.
+    // (the healthbars move, they dont scale.)
     int barStats[6] = {int(lerp(0, -71, (150.0f - boxer1.m_hp) / 150.f)),
                        int((-0.71f * (100 - boxer1.m_stamina)) - ((8.0f * boxer1.m_stamina) / 100)),
                        int(lerp(0, 71, (150.0f - boxer2.m_hp) / 150.f)),
@@ -1091,6 +1095,8 @@ void Game::updateFightBottom()
                        int(floor(boxer1.m_super) / 50) + 1,
                        int(floor(boxer2.m_super) / 50) + 1};
 
+    // Same data but flipped around to the oopposite side. Title defense mode uses this too, but MP
+    // was made beforehand
     int mpbarStats[6] = {
         int(lerp(0, -71, (150.0f - boxer2.m_hp) / 150.f)),
         int((-0.71f * (100 - boxer2.m_stamina)) - ((8.0f * boxer2.m_stamina) / 100)),
@@ -1100,8 +1106,11 @@ void Game::updateFightBottom()
         int(floor(boxer2.m_super) / 50) + 1,
         int(floor(boxer1.m_super) / 50) + 1};
 
+    // If the bars should be switched
     bool switchbars = ((currentGame == MP_GAME) && (!isHost)) || titleDefense;
 
+    // Move each respective healthbar based on the input data
+    // Or sets the frame of the super meter based on the super data
     for (int i = 0; i < 6; i++)
     {
       if (i < 4)
@@ -1138,6 +1147,8 @@ void Game::updateFightBottom()
                 ((switchbars ? mpbarStats[i] : barStats[i]) == 6 && (tick % 30 > 15) ? 1 : 0));
     }
 
+    // Set the music pitch and the "boxerbars" background back to normal
+    // Because a knockdown changes all of these values
     if (boxer1.m_state != DOWN || !matchActive)
     {
       mmSetModulePitch(titleDefense ? 960 : 1024);
@@ -1153,6 +1164,13 @@ void Game::updateFightBottom()
       NF_ShowSprite(1, 22, false);
       NF_ShowBg(1, 2);
     }
+
+    // If the controlling player is knocked down:
+    // - Make music deeper
+    // - Hide the bg and make the bg of the "boxerbars" black
+    // - Show the CTA text and the DS icon guide
+    // - Set the brightness based on how much your bottom screen spam is
+
     else if ((boxer1.m_state == DOWN && boxer1.m_rounddowns != 3))
     {
       float spam = boxer1.m_getUpCount / 100.0f;
@@ -1176,6 +1194,7 @@ void Game::updateFightBottom()
 
       NF_HideBg(1, 2);
 
+      // Flash screen for every touch
       if (keysDown() & KEY_TOUCH)
       {
         Transition(2, -4, -8, false);
@@ -1184,19 +1203,24 @@ void Game::updateFightBottom()
   }
 }
 
-int bellAnim = 0;
-
 void Game::updateFightTop()
 {
+
+  // timer and its snprintf is never used because this was only used in dev.
+  // it has been replaced with the system below
+  /*
   char timer[5];
 
   snprintf(timer, sizeof(timer), ((roundTimer / 60) % 60) < 10 ? "%i0%i" : "%i%i",
            (roundTimer / 60) / 60, (roundTimer / 60) % 60);
+  */
 
+  // Define integer of the minute, seconds digit 1, and seconds digit 2
   int min = (roundTimer / 60) / 60;
   int sec1 = ((roundTimer / 60) % 60) < 10 ? 0 : (roundTimer / 60) % 60 / 10;
   int sec2 = ((roundTimer / 60) % 60) % 10;
 
+  // Change the digit sprites based on these values + round number
   for (int i = 0; i < 4; i++)
   {
     int offset = 31;
@@ -1239,6 +1263,7 @@ void Game::updateFightTop()
         break;
     }
 
+    // Move the sprites based on the camera
     int newx;
     int newy;
 
@@ -1248,6 +1273,7 @@ void Game::updateFightTop()
     NF_MoveSprite(0, offset + i, newx, newy);
   }
 
+  // Move the multiplayer identifiers
   for (int i : {36, 37})
   {
     int leftsidex = (isHost ? boxer1.m_x : boxer2.m_x) + 4;
@@ -1259,11 +1285,15 @@ void Game::updateFightTop()
     int newx;
     int newy;
 
+    // Move the sprites based on the camera
     worldToScreen(x, y, newx, newy, 16);
 
     NF_SpriteRotScale(0, 11, 0, int(128 * fScale), int(128 * fScale));
     NF_MoveSprite(0, i, newx, newy);
   }
+
+  // A big conditional that determines when the bell sprite should show.
+  // The two frame flickering is to create a sort of semi transparent look on DS hardware
 
   NF_ShowSprite(
       0, 30,
@@ -1273,12 +1303,16 @@ void Game::updateFightTop()
 
   );
 
+  // Animate the bell
   NF_SpriteFrame(0, 30, std::clamp(((tick - whenToStart) / 6), 0, 5));
   if (roundActive == false && roundTimer == 0)
   {
     NF_SpriteFrame(0, 30, std::clamp(((bellAnim) / 6), 0, 5));
     bellAnim++;
   }
+
+  // Enable or disable the top screen letterboxing based on if
+  // either fighter is doing their super move.
 
   if (boxer1.m_state == SUPERSEQ || boxer2.m_state == SUPERSEQ)
   {
@@ -1298,8 +1332,8 @@ void Game::updateFightTop()
     }
   }
 
+  // Lerp the movement so that it's smoother
   float lerper = std::clamp(sequenceSuper / 60.0f, 0.0f, 1.0f);
-  // lerper = 1;
 
   int toplimit = (boxer1.m_character == SLIMJIM || boxer2.m_character == SLIMJIM) ? 43 : 65;
 
@@ -1307,8 +1341,10 @@ void Game::updateFightTop()
                   SCREEN_HEIGHT - lerp(0, 16, (1 - std::pow(1 - lerper, 2))));
 }
 
+// This function handles the transition between the game scene and the interval scene
 void Game::intervalTransition(bool transitioning_in, bool updater)
 {
+  // If you are not calling this function to update it, set the initial function variables instead.
   if (!updater)
   {
     sequenceInterval = -5;
@@ -1318,6 +1354,7 @@ void Game::intervalTransition(bool transitioning_in, bool updater)
 
   sequenceInterval++;
 
+  // Sequence when transitioning in
   if (transitioningIntoInterval)
   {
     switch (sequenceInterval)
@@ -1346,6 +1383,7 @@ void Game::intervalTransition(bool transitioning_in, bool updater)
     }
   }
 
+  // Sequence when transitioning out
   if (!transitioningIntoInterval)
   {
     switch (sequenceInterval)
@@ -1379,8 +1417,245 @@ void Game::intervalTransition(bool transitioning_in, bool updater)
   }
 }
 
+// Handles the game ending sequence
+bool Game::endGame()
+{
+  // Determine if the winning time is shorter than the current time on record
+  // if it is, you got a new record!
+
+  int currenttime = roundNumber * (10800 - roundTimer);
+  int recordtime;
+  bool newRecord;
+
+  // Checks which times to look at: regular story or title defense
+  if (titleDefense)
+  {
+    recordtime = game_data.recordTD[storyCounter - 6] * game_data.recordTD[storyCounter - 1];
+    newRecord = currenttime < recordtime || game_data.recordTD[storyCounter - 6] == -1;
+  }
+  else
+  {
+    recordtime = game_data.recordTimes[storyCounter - 1] * game_data.recordTimes[storyCounter + 4];
+    newRecord = currenttime < recordtime || game_data.recordTimes[storyCounter - 1] == -1;
+  }
+
+  // Only show this stuff a second after winning
+  if ((tick - sequenceMatchOver) >= 60)
+  {
+
+    // Get the time into the fight
+    int time = 10800 - roundTimer;
+
+    char boxerInfo[50];
+
+    // Split into M:SS digits
+    int min = (time / 60) / 60;
+    int sec1 = ((time / 60) % 60) < 10 ? 0 : (time / 60) % 60 / 10;
+    int sec2 = ((time / 60) % 60) % 10;
+
+    // Format
+    sprintf(boxerInfo, "R%i %i:%i%i", roundNumber, min, sec1, sec2);
+
+    // Write the result based on the current situation
+    NF_WriteText(1, 0, 8, 10,
+                 boxer1.m_state == DOWN     ? "   You Lose...   "
+                 : boxer2.m_rounddowns == 3 ? "      TKO!!      "
+                 : boxerDown                ? "    Knockout!    "
+                                            : "Majority Decision");
+
+    // Show the boxerInfo format if you won
+    NF_WriteText(1, 0, 13, 12, expectedWinner == 1 ? boxerInfo : "");
+
+    // If it's a new record, you get some colorful text
+    NF_SetTextColor(1, 0, tick % 8 > 4 ? 2 : 1);
+    NF_WriteText(1, 0, 11, 14,
+                 (currentGame == STORY_GAME) && (newRecord && expectedWinner == 1) ? "New Record!"
+                                                                                   : "");
+    // Back to white text
+    NF_SetTextColor(1, 0, 1);
+  }
+
+  // Win sequence
+  switch (tick - sequenceMatchOver)
+  {
+
+    case (30):
+      mmEffect(SFX_BELL);
+      mmStop();
+      break;
+    case (40):
+      mmEffect(SFX_BELL);
+      break;
+    case (50):
+      mmEffect(SFX_BELL);
+      break;
+    case (60):
+      // Hide the ko number if visible
+      NF_ShowSprite(0, 35, false);
+
+      // Don't play this sfx if it came from a decision win
+      if (ref.m_state != DECISION)
+        mmEffect(SFX_REF_ITSOVER);
+
+      Transition(3, 8, 0, false);
+
+      break;
+
+    case (100):
+
+      // Play the victory quote of each boxer
+      if (expectedWinner == 1)
+      {
+        mmEffect(boxer1.sfxwin);
+      }
+      else
+      {
+        mmEffect(boxer2.sfxwin);
+      }
+      break;
+
+    case (400):
+      Transition(3, 0, -16, true);
+      break;
+
+    // Fade back in, but now we are setting all the variables of the important stuff
+    case (440):
+      Transition(3, -16, 0, true);
+
+      // You win and its a story game? (STORY or TITLE DEFENSE)
+      if (expectedWinner == 1 && (currentGame == STORY_GAME))
+      {
+        unloadBoxingRing();
+
+        // If it was the last fight...
+        if (storyCounter == 5 || storyCounter == 10)
+        {
+          // Flash white instead
+          Transition(3, 16, 0, true);
+
+          // Save the times for that run (not the record times, just the times for that run)
+          if (titleDefense)
+          {
+            game_data.TDTimes[storyCounter - 6] = roundNumber;
+            game_data.TDTimes[storyCounter - 1] = 10800 - roundTimer;
+          }
+          else
+          {
+            game_data.storyTimes[storyCounter - 1] = roundNumber;
+            game_data.storyTimes[storyCounter + 4] = 10800 - roundTimer;
+          }
+
+          // New record? Save it to the records!
+          if (newRecord)
+          {
+
+            if (titleDefense)
+            {
+              game_data.recordTD[storyCounter - 6] = roundNumber;
+              game_data.recordTD[storyCounter - 1] = 10800 - roundTimer;
+            }
+            else
+            {
+              game_data.recordTimes[storyCounter - 1] = roundNumber;
+              game_data.recordTimes[storyCounter + 4] = 10800 - roundTimer;
+            }
+          }
+
+          bool undisputed = titleDefense;
+
+          storyCounter = 1;
+
+          // Reset progress and tick the win variable in save data
+          if (titleDefense)
+          {
+
+            if (!game_data.wonTDOnce)
+              showCredits = true;
+
+            game_data.TDProgress = 6;
+            game_data.wonTDOnce = true;
+          }
+          else
+          {
+            game_data.storyProgress = 1;
+            game_data.wonOnce = true;
+          }
+
+          // Load the win screen, also passes in if you won from a title game
+          loadWinScreen(undisputed);
+        }
+        else // If it wasn't the last...
+        {
+
+          // Save the times for that run (not the record times, just the times for that run)
+          if (titleDefense)
+          {
+            game_data.TDTimes[storyCounter - 6] = roundNumber;
+            game_data.TDTimes[storyCounter - 1] = 10800 - roundTimer;
+          }
+          else
+          {
+            game_data.storyTimes[storyCounter - 1] = roundNumber;
+            game_data.storyTimes[storyCounter + 4] = 10800 - roundTimer;
+          }
+
+          // New record? Save it to the records!
+          if (newRecord)
+          {
+
+            if (titleDefense)
+            {
+              game_data.recordTD[storyCounter - 6] = roundNumber;
+              game_data.recordTD[storyCounter - 1] = 10800 - roundTimer;
+            }
+            else
+            {
+              game_data.recordTimes[storyCounter - 1] = roundNumber;
+              game_data.recordTimes[storyCounter + 4] = 10800 - roundTimer;
+            }
+          }
+
+          // Increment the story counter and set it the the save data progress.
+          // This is so you can come back to it later
+
+          storyCounter++;
+          if (titleDefense)
+            game_data.TDProgress = storyCounter;
+          else
+            game_data.storyProgress = storyCounter;
+
+          loadPreviewStory();
+        }
+      }
+      else // You are from a freeplay game or a multiplayer game.
+      {
+        // A multiplayer game? Record the data to your multiplayer records
+        if (currentGame == MP_GAME)
+        {
+          game_data.recordMultiplayer[boxer1.m_state == DOWN ? 1 : 0][boxer1.m_character]++;
+          if (boxer2.m_state == DOWN)
+            game_data.recordMultiplayer[2][boxer1.m_character]++;
+        }
+
+        // Return to main menu
+        unloadBoxingRing();
+        startMainMenu(false);
+        disable_multiplayer();
+      }
+
+      return true;
+
+      break;
+  }
+
+  return false;
+}
+
+// Manages the necessary variables of the current fight
 int Game::manageFight()
 {
+
+  // Determine who will win by decision, this is also useful for each fighter's cornermen dialogue
   if (boxerDown)
   {
     expectedWinner = boxer1.m_state == DOWN ? 2 : 1;
@@ -1398,6 +1673,9 @@ int Game::manageFight()
       expectedWinner = 1;
   }
 
+  // When the timer reaches zero and everyone is up, ring the bell.
+  // This will wait for each fighter to get up before ringing
+
   if (roundTimer == 0 && boxer1.m_state != DOWN && boxer2.m_state != DOWN && roundActive)
   {
     bellAnim = 0;
@@ -1408,216 +1686,33 @@ int Game::manageFight()
     setBrightness(3, 0);
   }
 
+  // Ren end game sequence after the game ends
   if (!matchActive && roundNumber > 0)
   {
-
-    int currenttime = roundNumber * (10800 - roundTimer);
-
-    int recordtime;
-    bool newRecord;
-
-    if (titleDefense)
-    {
-      recordtime = game_data.recordTD[storyCounter - 6] * game_data.recordTD[storyCounter - 1];
-      newRecord = currenttime < recordtime || game_data.recordTD[storyCounter - 6] == -1;
-    }
-    else
-    {
-      recordtime =
-          game_data.recordTimes[storyCounter - 1] * game_data.recordTimes[storyCounter + 4];
-      newRecord = currenttime < recordtime || game_data.recordTimes[storyCounter - 1] == -1;
-    }
-
-    if ((tick - sequenceMatchOver) >= 60)
-    {
-
-      int time = 10800 - roundTimer;
-
-      char boxerInfo[50];
-
-      int min = (time / 60) / 60;
-      int sec1 = ((time / 60) % 60) < 10 ? 0 : (time / 60) % 60 / 10;
-      int sec2 = ((time / 60) % 60) % 10;
-
-      sprintf(boxerInfo, "R%i %i:%i%i", roundNumber, min, sec1, sec2);
-
-      NF_WriteText(1, 0, 8, 10,
-                   boxer1.m_state == DOWN     ? "   You Lose...   "
-                   : boxer2.m_rounddowns == 3 ? "      TKO!!      "
-                   : boxerDown                ? "    Knockout!    "
-                                              : "Majority Decision");
-
-      NF_WriteText(1, 0, 13, 12, expectedWinner == 1 ? boxerInfo : "");
-      NF_SetTextColor(1, 0, tick % 8 > 4 ? 2 : 1);
-      NF_WriteText(1, 0, 11, 14,
-                   (currentGame == STORY_GAME) && (newRecord && expectedWinner == 1) ? "New Record!"
-                                                                                     : "");
-      NF_SetTextColor(1, 0, 1);
-    }
-
-    switch (tick - sequenceMatchOver)
-    {
-      case (30):
-        mmEffect(SFX_BELL);
-        mmStop();
-        break;
-      case (40):
-        mmEffect(SFX_BELL);
-        break;
-      case (50):
-        mmEffect(SFX_BELL);
-        break;
-      case (60):
-        NF_ShowSprite(0, 35, false);
-
-        if (ref.m_state != DECISION)
-          mmEffect(SFX_REF_ITSOVER);
-        Transition(3, 8, 0, false);
-
-        break;
-
-      case (100):
-        if (expectedWinner == 1)
-        {
-          mmEffect(boxer1.sfxwin);
-        }
-        else
-        {
-          mmEffect(boxer2.sfxwin);
-        }
-
-        break;
-
-      case (400):
-        Transition(3, 0, -16, true);
-        break;
-      case (440):
-        Transition(3, -16, 0, true);
-
-        if (expectedWinner == 1 && (currentGame == STORY_GAME))
-        {
-          unloadBoxingRing();
-          if (storyCounter == 5 || storyCounter == 10)
-          {
-            Transition(3, 16, 0, true);
-
-            if (titleDefense)
-            {
-              game_data.TDTimes[storyCounter - 6] = roundNumber;
-              game_data.TDTimes[storyCounter - 1] = 10800 - roundTimer;
-            }
-            else
-            {
-              game_data.storyTimes[storyCounter - 1] = roundNumber;
-              game_data.storyTimes[storyCounter + 4] = 10800 - roundTimer;
-            }
-
-            if (newRecord)
-            {
-
-              if (titleDefense)
-              {
-                game_data.recordTD[storyCounter - 6] = roundNumber;
-                game_data.recordTD[storyCounter - 1] = 10800 - roundTimer;
-              }
-              else
-              {
-                game_data.recordTimes[storyCounter - 1] = roundNumber;
-                game_data.recordTimes[storyCounter + 4] = 10800 - roundTimer;
-              }
-            }
-
-            bool undisputed = titleDefense;
-
-            storyCounter = 1;
-            if (titleDefense)
-            {
-
-              if (!game_data.wonTDOnce)
-                showCredits = true;
-
-              game_data.TDProgress = 6;
-              game_data.wonTDOnce = true;
-            }
-            else
-            {
-              game_data.storyProgress = 1;
-              game_data.wonOnce = true;
-            }
-
-            loadWinScreen(undisputed);
-          }
-          else
-          {
-            if (titleDefense)
-            {
-              game_data.TDTimes[storyCounter - 6] = roundNumber;
-              game_data.TDTimes[storyCounter - 1] = 10800 - roundTimer;
-            }
-            else
-            {
-              game_data.storyTimes[storyCounter - 1] = roundNumber;
-              game_data.storyTimes[storyCounter + 4] = 10800 - roundTimer;
-            }
-
-            if (newRecord)
-            {
-
-              if (titleDefense)
-              {
-                game_data.recordTD[storyCounter - 6] = roundNumber;
-                game_data.recordTD[storyCounter - 1] = 10800 - roundTimer;
-              }
-              else
-              {
-                game_data.recordTimes[storyCounter - 1] = roundNumber;
-                game_data.recordTimes[storyCounter + 4] = 10800 - roundTimer;
-              }
-            }
-
-            storyCounter++;
-            if (titleDefense)
-              game_data.TDProgress = storyCounter;
-            else
-              game_data.storyProgress = storyCounter;
-
-            loadPreviewStory();
-          }
-        }
-        else
-        {
-
-          if (currentGame == MP_GAME)
-          {
-            game_data.recordMultiplayer[boxer1.m_state == DOWN ? 1 : 0][boxer1.m_character]++;
-            if (boxer2.m_state == DOWN)
-              game_data.recordMultiplayer[2][boxer1.m_character]++;
-          }
-
-          unloadBoxingRing();
-          startMainMenu(false);
-          disable_multiplayer();
-        }
-
-        return 1;
-
-        break;
-    }
+    if (endGame())
+      return 1;
   }
 
+  // Game up and running normally?
   if (currentScene == GAME && roundActive)
   {
+
+    // Countdown the round (if you're in multiplayer, the host handles this
+    // and sends it the the multiplayer mp_game struct)
     if ((currentGame != MP_GAME) || isHost)
     {
       if ((!paused || (currentGame == MP_GAME)) && roundActive && roundTimer > 0)
         roundTimer -= timerSpeed;
     }
 
+    // If either boxer is down...
     if (boxer1.m_state == DOWN || boxer2.m_state == DOWN)
     {
       if (!boxerDown)
       {
         mmEffect(SFX_KO);
+
+        // Stop the game on a TKO
         if (boxer2.m_rounddowns == 3 || boxer1.m_rounddowns == 3)
         {
           if (currentGame != MP_GAME)
@@ -1627,6 +1722,7 @@ int Game::manageFight()
           sequenceMatchOver = tick;
         }
       }
+      // Set this so it doesn't repeatedly stop the game.
       boxerDown = true;
     }
     else
@@ -1636,12 +1732,17 @@ int Game::manageFight()
 
     if (boxerDown)
     {
+      // Starts counting down
       downTimer++;
+
+      // Show the numbers once the timer actually starts
       if (downTimer % 60 == 0)
       {
         NF_SpriteFrame(0, 35, (downTimer / 60));
         NF_ShowSprite(0, 35, true);
       }
+
+      // Stop the game on a KO
       if (downTimer == 540)
       {
         if (boxer1.m_state == DOWN)
@@ -1655,6 +1756,9 @@ int Game::manageFight()
     }
     else
     {
+      // Reset time and hide the sprite
+      // (-45 gives you like 3/4s of a second before it starts actually counting down)
+
       downTimer = -45;
       NF_ShowSprite(0, 35, false);
     }
@@ -1663,6 +1767,7 @@ int Game::manageFight()
     {
       if (playerDowned)
       {
+        // Fade screen back to normal
         Transition(3, -8, 0, false);
         playerDowned = false;
       }
@@ -1671,6 +1776,7 @@ int Game::manageFight()
     {
       if (!playerDowned)
       {
+        // If you're down, fade from a flash to dark (or back to normal if you were TKOd)
         Transition(3, 5, matchActive ? -8 : 0, false);
         playerDowned = true;
       }
@@ -1682,12 +1788,16 @@ int Game::manageFight()
 
 void Game::crowdSounds()
 {
+
+  // If the crowd check runs, cancel the previous sound
+  // then run the crowd sfx again to loop the sounds
   if (((tick - crowdStart) % 120) == 5)
   {
     mmEffectCancel(crowd);
     crowd = mmEffect(SFX_CROWD);
   }
 
+  // Decrease and increase crowd volume based on what is happening
   if ((!roundActive || boxerDown || (sequenceSuper > 0) || !matchActive) && !interval)
   {
     crowdVolume = std::clamp(crowdVolume + 5, 30, 255);
@@ -1700,8 +1810,10 @@ void Game::crowdSounds()
   mmEffectVolume(crowd, crowdVolume);
 }
 
+// Very messy function, do not like it
 void Game::cameraHandler()
 {
+  // Game camera
   if (currentScene == GAME)
   {
     // Define variables for fight centering & game over panning
@@ -1732,11 +1844,15 @@ void Game::cameraHandler()
     fOffsetX += (beforeZoomX - afterZoomX);
     fOffsetY += (beforeZoomY - afterZoomY);
 
+    // Apply to the background
     NF_AffineBgMove(0, 2, fOffsetX + 128, fOffsetY + 128, 0);
     NF_AffineBgTransform(0, 2, int(256 / fScale), int(256 / fScale), 0, 0);
     NF_AffineBgMove(0, 3, fOffsetX + 128, fOffsetY + 128, 0);
     NF_AffineBgTransform(0, 3, int(256 / fScale), int(256 / fScale), 0, 0);
   }
+
+  // Why this is in the same function I don't know, but
+  // Handle the background movement for the preview, winning, and undisputed scenes.
 
   if (currentScene == PREVIEW || currentScene == WINNER || currentScene == UNDISPUTED)
   {
@@ -1745,6 +1861,8 @@ void Game::cameraHandler()
 
     NF_AffineBgMove(0, 2, 0, int(3 * sin(tick / 30.0f)) - 3, 0);
   }
+
+  // Interval camera, zoom based on the screen brightness
 
   if (interval)
   {
@@ -1762,8 +1880,11 @@ void Game::cameraHandler()
   }
 }
 
+// Function to handle new rounds
 void Game::newRound(int when, bool updater)
 {
+
+  // Sequence and timer
   if (updater)
   {
     if ((whenToStart - tick) < 120 && (currentGame == MP_GAME) && !roundActive && matchActive &&
@@ -1782,6 +1903,7 @@ void Game::newRound(int when, bool updater)
     return;
   }
 
+  // Didn't call this function to update it? Then set the variables
   roundNumber++;
   roundTimer = 10800;
   boxer1.resetPosition();
@@ -1791,8 +1913,11 @@ void Game::newRound(int when, bool updater)
   whenToStart = tick + when;
 }
 
+// Function to handle decision sequence
 void Game::decision(bool updater)
 {
+
+  // Sequence
   if (updater)
   {
     int whoToPick = expectedWinner;
@@ -1827,6 +1952,7 @@ void Game::decision(bool updater)
     return;
   }
 
+  // Didn't call this function to update it? Then set the variables
   boxer1.resetPosition();
   boxer2.resetPosition();
   ref.resetPosition();
@@ -1836,10 +1962,13 @@ void Game::decision(bool updater)
   ref.decisionSequence(expectedWinner, true);
 }
 
+// Big update func.
 void Game::update()
 {
   NF_ClearTextLayer(1, 0);
+  // Clear all text before drawing the text
 
+  // Send all multiplayer information during a multiplayer game. It's a lot of stuff
   if ((currentGame == MP_GAME) && currentScene == GAME && mp_game.connected == 1)
   {
     tick_multiplayer();
@@ -1948,6 +2077,7 @@ void Game::update()
       boxer2.m_frame = std::max(mp_game.player[0].m_frame, 0);
     }
 
+    // Quit if you've timed out
     if (get_multiplayer_status() == MP_CONNECTION_LOST)
     {
       Transition(3, -16, 0, true);
@@ -1957,12 +2087,16 @@ void Game::update()
     }
   }
 
+  // If you're not paused (Pausing doesn't happen in a multiplayer game)
   if (!paused || (currentGame == MP_GAME))
   {
     tick++;
+
+    // Updaters
     TransitionUpdate(tick);
     cameraHandler();
 
+    // Paused in a multiplayer game?
     if ((currentGame == MP_GAME) && paused)
     {
       {
@@ -1973,6 +2107,7 @@ void Game::update()
       }
     }
 
+    // Update all boxers and the referee during the game
     if (boxersLoaded && !interval)
     {
       boxer1.update(boxer2, roundActive && ref.allowMovement, matchActive);
@@ -1980,6 +2115,7 @@ void Game::update()
       ref.update(boxer1, boxer2, roundActive, matchActive);
     }
 
+    // Update the menu if you are in the menu (also save data every 60 seconds)
     if (currentScene == MENU)
     {
       menu.Update();
@@ -1989,8 +2125,11 @@ void Game::update()
       }
     }
 
+    // Game scene
     if (currentScene == GAME && boxersLoaded)
     {
+
+      // Game running?
       if ((currentGame != MP_GAME) || ((whenToStart - tick < 60) && !ref.makingDecision) ||
           multiplayerReady)
       {
@@ -2002,7 +2141,7 @@ void Game::update()
         decision(true);
         newRound(0, true);
       }
-      else
+      else // Multiplayer game and both players aren't ready? Delay.
       {
         whenToStart++;
 
@@ -2022,6 +2161,7 @@ void Game::update()
       crowdSounds();
     }
 
+    // Interval scene?
     if (currentScene == GAME && interval)
     {
       NF_SetTextColor(1, 0, 1);
@@ -2054,6 +2194,7 @@ void Game::update()
         NF_WriteText(1, 0, 19, 7 + (2 * i), helpfultext);
       }
 
+      // Change cornerman dialogue
       CornermenDialogue dynamicTalk;
       dynamicTalk = (roundNumber == maxRounds) ? REFWILLDECIDE
                     : (expectedWinner != 1)    ? GETTING_HURT
@@ -2064,9 +2205,11 @@ void Game::update()
       if (brightness == 0 || transitioningIntoInterval)
         RunDialogue(cornermenDialogue[boxer1.m_character][dynamicTalk], 5, 3, 2, 10);
 
+      // Cornerman sprite
       NF_SpriteFrame(1, 29, ((int)boxer1.m_character * 4) + ((tick / 12) % 4));
     }
 
+    // Preview scene
     if (currentScene == PREVIEW)
     {
       RunDialogue(currentMatch->quotetext, currentMatch->quotelines, 5, 2, 7);
@@ -2083,6 +2226,7 @@ void Game::update()
       }
     }
 
+    // Winner scene
     if (currentScene == WINNER)
     {
       if (tick % 60 < 30)
@@ -2097,6 +2241,7 @@ void Game::update()
         NF_SetTextColor(1, 0, 1);
       }
 
+      // Show off all your times for the run
       NF_SetTextColor(1, 0, 1);
       for (int i = 0; i < 5; i++)
       {
@@ -2136,6 +2281,7 @@ void Game::update()
       }
     }
 
+    // Undisputed scene, same as the win screen.
     if (currentScene == UNDISPUTED)
     {
       if (tick % 60 < 30)
@@ -2189,13 +2335,14 @@ void Game::update()
       }
     }
   }
-  else
+  else // Show pause
   {
     NF_WriteText(1, 0, 9, 9, "Paused");
     NF_WriteText(1, 0, 9, 11, "Start: Continue");
     NF_WriteText(1, 0, 9, 12, "B: Quit");
   }
 
+  // Intro scene
   if (currentScene == INTROCUTSCENE)
   {
     if (tick % 120 == 0 && tick > 320 && tick < 1000)

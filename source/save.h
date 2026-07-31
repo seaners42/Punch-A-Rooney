@@ -9,6 +9,8 @@
 
 #include <nds/arm9/dldi.h>
 
+// Taken from BlocksDS in their file systems guide
+
 typedef struct
 {
   bool playedOnce;

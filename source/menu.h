@@ -19,6 +19,12 @@
 #include "maxmod9.h"
 #include "soundbank.h"
 
+// I give credit to William278 because most of how the menu navigation works comes from his Breaking
+// Bad DS game.
+
+// Not everything was directly copied, but he's the reason I used a similar header file for my
+// layouts
+
 class Menu
 {
   // Standard Menu & Navigation
@@ -31,6 +37,7 @@ class Menu
   int touchLast[2] = {0, 0};
   bool doubleCheck = false;
 
+  // Song info
   mm_word menuSong;
   int chosenSong = 1;
   mm_word mus_player[10] = {MOD_TITLETHEME,  MOD_SLIMJIM,         MOD_JILL,   MOD_PABLO,
@@ -41,6 +48,7 @@ class Menu
                                 "Champion!", "Undefeated!"};
   bool songPlaying = true;
 
+  // Page navigation
   int pageNumber = 1;
   int Cursor = 0;
 
@@ -53,13 +61,14 @@ class Menu
       {0, 5, 1}, {0, 5, 1}, {0, 5, 1},
   };
 
+  // Defined on config screen
   int customFlags[6] = {
-      // Defined on config screen
       1, 3, 2,
 
       0, 0, 0,
   };
 
+  // Custom game info
   const char* customNames[3] = {
       "Difficulty",
       "Rounds",
