@@ -22,7 +22,9 @@ Play on your own, or in local multiplayer!
 
 # How To Play
 
-Put the ROM on a flashcart and enjoy some sweet dual screen action.
+* Move your .nds copy onto an SD card.
+* Insert it into your favorite flashcart.
+* Enjoy some sweet dual screen action!
 
 ### Emulator
 
@@ -30,7 +32,7 @@ Load the ROM on your favorite emulator! I personally used [melonDS](https://gith
 
 ### 3DS/DSi Modded
 
-This game works on Twilight Menu++ so modded DSi and 3DS users can also enjoy!
+This game works on [Twilight Menu++](https://wiki.ds-homebrew.com/twilightmenu/installing-3ds), so modded DSi and 3DS users can also enjoy!
 
 I will create a QR code for 3DS players with FBI soon
 
@@ -40,14 +42,15 @@ I will create a QR code for 3DS players with FBI soon
 
 - A: Light Punch
 - B: Heavy Punch
-- X: The Viola (Super Move)
 
 - L: Block
 - R: Dodge
 
+- X: The Viola (Super Move)
+
 ### Multiplayer
 
-You'll need two consoles (or melonDS with a multiplayer window)
+Punch-A-Rooney! supports Local Multiplayer via two Nintendo DS consoles where both fighters can choose a boxer of their choice to personally duke it out!
 
 * Enter Local on both consoles
 * Host on one console, then join on the other
