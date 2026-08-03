@@ -1,5 +1,5 @@
 # Punch-A-Rooney
-**Punch-A-Rooney**, the homebrew boxing game made for the Nintendo DS
+The homebrew boxing game made for the Nintendo DS
 
 Play as Rooney "Punchstache" Bafutto, a 22-year-old Italian boxer who quits his job as a plumber.
 Fight against five fighters, become champion, then defend your title!
