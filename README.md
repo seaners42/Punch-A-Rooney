@@ -1,5 +1,6 @@
-# Punch-A-Rooney
-The homebrew boxing game made for the Nintendo DS
+<td><img alt="PUNCH-A-ROONEY" src="https://github.com/seaners42/Punch-A-Rooney/blob/main/Title.PNG" /></td>
+
+**The homebrew boxing game made for the Nintendo DS**
 
 Play as Rooney "Punchstache" Bafutto, a 22-year-old Italian boxer who quits his job as a plumber.
 Fight against five fighters, become champion, then defend your title!
@@ -76,3 +77,5 @@ There are a lot of sloppy convert bashes in each asset folder. Run them in order
 
 ## License
 The source code for this project is licensed under Apache-2.0, except otherwise stated.
+
+All assets are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
