@@ -1,4 +1,6 @@
-<td><img alt="PUNCH-A-ROONEY" src="https://github.com/seaners42/Punch-A-Rooney/blob/main/Title.PNG" /></td>
+<img alt="PUNCH-A-ROONEY" src="https://github.com/seaners42/Punch-A-Rooney/blob/main/Title.PNG" />
+
+<hr></hr>
 
 **The homebrew boxing game made for the Nintendo DS**
 
@@ -35,7 +37,15 @@ Load the ROM on your favorite emulator! I personally used [melonDS](https://gith
 
 This game works on [Twilight Menu++](https://wiki.ds-homebrew.com/twilightmenu/installing-3ds), so modded DSi and 3DS users can also enjoy!
 
-I will create a QR code for 3DS players with FBI soon
+<hr>
+
+If you have <b>[DSI Downloader](https://github.com/Epicpkmn11/dsidl)</b>, you can scan the <b>QR code</b> below to download the game.
+<details>
+  <summary>dsidl QR Code (v1.0.1)</summary>
+  <img alt="Sorry, do it the old fashioned way!" src="qr_1.0.1.svg" width="200px" />
+</details>
+
+<hr>
 
 ## Quick Guide
 
