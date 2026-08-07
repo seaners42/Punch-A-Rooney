@@ -79,8 +79,13 @@ If your emulator does not support saving, try to use save states!
 
 ## Building
 
-### Libraries
-I used the libraries provided by [BlocksDS](https://blocksds.skylyrac.net/). Once installed, run make in the directory to create a .nds file.
+1. I used the libraries provided by [BlocksDS](https://blocksds.skylyrac.net/), please follow their guide to download all their libraries
+2. cd into Punch-A-Rooney/
+3. Run
+   ```bash
+   make
+   ```
+This will build a .nds file.
 
 ### Assets
 There are a lot of sloppy convert bashes in each asset folder. Run them in order based on "alphabetical order"
