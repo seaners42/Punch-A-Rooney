@@ -611,14 +611,6 @@ int Menu::Update()
     case DEFENSE:
       NF_SetTextColor(1, 0, 0);
 
-      // Show guide pointer
-      if (!game_data.lookedAtGuide)
-      {
-        NF_SetTextColor(1, 0, 2);
-        NF_WriteText(1, 0, 15, 19, "New? Look here!");
-        NF_SetTextColor(1, 0, 1);
-      }
-
       if (doubleCheck)
       {
         char helpfultext[20];
@@ -628,23 +620,31 @@ int Menu::Update()
         NF_WriteText(1, 0, 8, 5, helpfultext);
       }
 
-      char guidetext[10];
-      sprintf(guidetext, "%s: Guide", btnfonts[FNT_X]);
-      NF_WriteText(1, 0, 22, 21, guidetext);
-
-      break;
-
     case CAREER:
+      char guidetext[10];
+
       // Show guide pointer
       if (!game_data.lookedAtGuide)
       {
         NF_SetTextColor(1, 0, 2);
-        NF_WriteText(1, 0, 15, 19, "New? Look here!");
+        NF_WriteText(1, 0, 8, 17, "New?  Look here!");
+        NF_WriteText(1, 0, 8, 15, (tick % 30 > 15) ? ">>" : " >>");
+        NF_WriteText(1, 0, 21, 15, (tick % 30 > 15) ? " <<" : "<<");
         NF_SetTextColor(1, 0, 1);
+
+        NF_SetTextColor(1, 0, 1);
+
+        sprintf(guidetext, "%s: Guide", btnfonts[FNT_X]);
+        NF_WriteText(1, 0, 12, 15, guidetext);
+      }
+      else
+      {
+        NF_SetTextColor(1, 0, 1);
+
+        sprintf(guidetext, "%s: Guide", btnfonts[FNT_X]);
+        NF_WriteText(1, 0, 22, 21, guidetext);
       }
 
-      sprintf(guidetext, "%s: Guide", btnfonts[FNT_X]);
-      NF_WriteText(1, 0, 22, 21, guidetext);
       break;
 
     case MUSIC_PLAYER:
@@ -1373,6 +1373,12 @@ MenuSelection Menu::handleInput()
     }
   }
 
+  bool left_or_right_pressed = (keysDown() & KEY_LEFT || keysDown() & KEY_RIGHT);
+  bool left_or_right_touched =
+      keysDown() & KEY_TOUCH &&
+      ((isTouchInBounds(touch, 1 * 8, 10 * 8, (4 * 8), (13 * 8), false)) ||
+       (isTouchInBounds(touch, 28 * 8, 10 * 8, (32 * 8), (13 * 8), false)));
+
   switch (currentMenu)
   {
 
@@ -1418,7 +1424,8 @@ MenuSelection Menu::handleInput()
 
     // Scroll through the gallery
     case GALLERY:
-      if ((keysDown() & KEY_LEFT || keysDown() & KEY_RIGHT) && (pageNumber >= 1 && pageNumber <= 7))
+
+      if ((left_or_right_touched || left_or_right_pressed) && (pageNumber >= 1 && pageNumber <= 7))
       {
         Transition(2, -16, 0, true);
 

@@ -124,6 +124,10 @@ void Referee::movementHandler(Boxer& boxer1, Boxer& boxer2, bool roundActive, bo
   else
   {
     timeSpentCounting = matchActive ? -40 : -100;
+    if (!matchActive && !makingDecision)
+    {
+      m_state = REFIDLE;
+    }
   }
 
   switch (m_movement)
