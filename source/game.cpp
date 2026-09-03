@@ -131,17 +131,8 @@ void Game::initializeDS(int argc, char** argv)
     for (int i = 0; i < 10; i++)
     {
       game_data.storyTimes[i] = -1;
-    }
-    for (int i = 0; i < 10; i++)
-    {
       game_data.TDTimes[i] = -1;
-    }
-    for (int i = 0; i < 10; i++)
-    {
       game_data.recordTimes[i] = -1;
-    }
-    for (int i = 0; i < 10; i++)
-    {
       game_data.recordTD[i] = -1;
     }
     for (int i = 0; i < 6; i++)
