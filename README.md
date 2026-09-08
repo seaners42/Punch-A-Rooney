@@ -88,7 +88,13 @@ If your emulator does not support saving, try to use save states!
 This will build a .nds file.
 
 ## Assets
-There are a lot of sloppy convert bashes in each asset folder. Run them in order based on "alphabetical order"
+There are a lot of sloppy convert bashes in each asset folder. Run them in order
+```bash
+"bash convert.sh"
+"bash convert_1.sh"
+"bash convert_1_1.sh"
+"..."
+```
 
 # License
 The source code for this project is licensed under Apache-2.0, except otherwise stated.
