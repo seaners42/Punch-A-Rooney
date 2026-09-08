@@ -90,10 +90,10 @@ This will build a .nds file.
 ## Assets
 There are a lot of sloppy convert bashes in each asset folder. Run them in order
 ```bash
-"bash convert.sh"
-"bash convert_1.sh"
-"bash convert_1_1.sh"
-"..."
+bash convert.sh
+bash convert_1.sh
+bash convert_1_1.sh
+...
 ```
 
 # License
