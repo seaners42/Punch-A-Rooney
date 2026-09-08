@@ -87,7 +87,7 @@ If your emulator does not support saving, try to use save states!
    ```
 This will build a .nds file.
 
-# Assets
+## Assets
 There are a lot of sloppy convert bashes in each asset folder. Run them in order based on "alphabetical order"
 
 # License
