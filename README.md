@@ -77,7 +77,7 @@ Punch-A-Rooney! supports Local Multiplayer via two Nintendo DS consoles where bo
 Works on hardware and melonDS, but if your emulator does not allow saving the game will work fine.
 If your emulator does not support saving, try to use save states!
 
-## Building
+# Building
 
 1. I used the libraries provided by [BlocksDS](https://blocksds.skylyrac.net/), please follow their guide to download all their libraries
 2. cd into Punch-A-Rooney/
@@ -87,10 +87,10 @@ If your emulator does not support saving, try to use save states!
    ```
 This will build a .nds file.
 
-### Assets
+# Assets
 There are a lot of sloppy convert bashes in each asset folder. Run them in order based on "alphabetical order"
 
-## License
+# License
 The source code for this project is licensed under Apache-2.0, except otherwise stated.
 
 All assets are licensed under [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/)
